@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"spedizioni.progetto_pog"},{"l":"spedizioni.progetto_pog.Grafica"},{"l":"spedizioni.progetto_pog.Grafica.Panel"},{"l":"spedizioni.progetto_pog.Logica"}];updateSearchResults();
