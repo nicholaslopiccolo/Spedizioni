@@ -130,7 +130,7 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
         
         assi_checkbox = new JCheckBox("Spedizione assicurata");
 
-        invia = new JButton("Aggiungi Spedizione");
+        invia = new JButton("Aggiungi spedizione");
         
         assi_checkbox.addActionListener(this);
         invia.addActionListener(this);
