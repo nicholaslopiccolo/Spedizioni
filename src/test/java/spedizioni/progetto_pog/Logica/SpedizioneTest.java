@@ -30,7 +30,7 @@ public class SpedizioneTest {
         assertEquals(s.getPeso(),12);
     }
     public void testGetDataImmissione(){
-        assertNotNull(s.getDataImmissione());
+        assertNotNull(s.getData());
     }
     
 }

@@ -13,22 +13,37 @@ import spedizioni.progetto_pog.Grafica.Panel.StartPanel;
 import spedizioni.progetto_pog.Logica.Core;
 
 /**
- *
- * @author giokk
+ * <strong>AppFrame</strong> è la classe madre della UI di questo progetto, da qui verrà
+ * avviata e riavviata l'interfaccia grafica.
+ * @author nicholaslopiccolo
  */
 public class AppFrame extends JFrame {
+    /**
+     * Variabile memorizza il core dell'applicativo
+     */
     private Core core;
-    
+    /**
+     * Variabile che memorizza il pannello di start
+     */
     private StartPanel startPanel;
+    /**
+     * Variabile che memoricca il main panel
+     */
     private MainPanel mainPanel;
     
-
+    /**
+     * Il costruttore di questa classe assegna titolo e core per utilizzo 
+     * interno, aggiunge un windowlistener che ascolterà l'evento di chiusura 
+     * e avvia l'applicazione.
+     * @param core  Gestisce la logica dell'applicazione
+     * @param titolo Titolo dell'applicazione
+     */
     public AppFrame(Core core, String titolo){
         super(titolo);
         this.core = core;
         /*
-        *
-        *   Sull'evento di chiusura della finestra salva i dati su file
+        *   Sull'evento di chiusura della finestra salva i dati su file 
+        *   sfruttando la funzione write dell'oggetto core
         */
         addWindowListener(new WindowAdapter() {
             @Override
@@ -41,9 +56,11 @@ public class AppFrame extends JFrame {
 	});
         
         avviaApp();
-        //pack();
     }
-    
+    /**
+     * Effettua dei setup grafici quali: grandezza, resize disattivato, 
+     * crea lo start panel necessario per il login, dopo lo aggiunge al frame.
+     */
     public void avviaApp(){
         setBounds(500,200,500,400);
         setResizable(false);
@@ -57,7 +74,11 @@ public class AppFrame extends JFrame {
         invalidate();
         validate();
     }
-    
+    /**
+     * Funzione chiamata dopo la fase di start o login dell'applicazione.
+     * Rimuove lo startPanel e attacca il mainPanel per permettere all'utente
+     * loggato di utilizzare tutte le funzionalità dell'applicazione
+     */
     public void runApp(){
         remove(startPanel);
         mainPanel = new MainPanel(this,core);
@@ -67,7 +88,5 @@ public class AppFrame extends JFrame {
         invalidate();
         validate();
         repaint();
-        
-        //frame.remove(this);
     }
 }

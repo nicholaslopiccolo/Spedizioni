@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package spedizioni.progetto_pog.Grafica.Panel;
 
 import java.awt.Color;
@@ -28,32 +23,68 @@ import spedizioni.progetto_pog.Logica.Core;
 
 
 /**
- *
- * @author giokk
+ * <strong>FormInserimentoPanel</strong> pannello in cui l'utente creerà 
+ * nuove spedizioni.
+ * @author nicholaslopiccolo
  */
 public class FormInserimentoPanel extends JPanel implements ActionListener{
+    /**
+     * Variabile che memorizza il frame a cui è agganciato il pannello.
+     */
     private AppFrame frame;
+    /**
+     * Variabile che memorizza il core dell'applicazione.
+     */
     private Core core;
-    private ListaSpedizioniPanel lista;
     
-    //String Indirizzo di destinazione
+    /**
+     * Variabile che memorizza il combobox contenente i suffissi urbanistici.
+     */
     private JComboBox denominazione;
+    /**
+     * Variabile che memorizza la textfield della stringa di destinazione della spedizione.
+     */
     private JTextField destinazione_text;
+    /**
+     * Variabile che memorizza la textfield ocntenente il civico di spedizione.
+     */
     private JTextField civico_text;
-    
+    /**
+     * Variabile che memorizza la label del valore assicurato.
+     */
     private JLabel val_label;
+    /**
+     * Variabile che memorizza il peso della nuova spedizione.
+     */
     private JSpinner peso_number;
+    /**
+     * Variabile che memorizza il valore assicurato della nuova spedizione.
+     */
     private JSpinner val_number;
+    /**
+     * Variabile che memorizza il la checkbox che stabilisce se la prossima 
+     * spedizione sarà a assicurata o meno.
+     */
     private JCheckBox assi_checkbox;
-    
+    /**
+     * Variabile che memorizza il JButton per la creazoine della prossima spedizione
+     */
     private JButton invia;
-    private String invia_str = "Aggiungi spedizione";
     
-    public FormInserimentoPanel(AppFrame frame, Core core,ListaSpedizioniPanel lista){
+    /**
+     * Il costruttore eseguirà un setup del pannello in modo tale da 
+     * mostrare gli elementi grafici all'utente.
+     * Le aggiunte grafiche sono: toolbar dell'indirizzo (contenente: suffisso 
+     * urbano nome via e civico), il peso della spedizione, un eventuale valore
+     * assicurato, le label e un checkbox per stabilire se la spedizione sia 
+     * assicurata o meno.
+     * @param frame Frame antenato del pannello
+     * @param core Gestisce la logica dell'applicazione
+     */
+    public FormInserimentoPanel(AppFrame frame, Core core){
         super();
         this.frame = frame;
         this.core = core;
-        this.lista = lista;
         
         setLayout(new GridLayout(6,1,10,10));
         setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
@@ -75,15 +106,14 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
         
         civico_text = new JTextField();
         civico_text.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent ke) {
-            String value = civico_text.getText();
-            int l = value.length();
-            if (ke.getKeyChar() >= '0' && ke.getKeyChar() <= '9')
-               civico_text.setEditable(true);
-            else 
-                civico_text.setEditable(false);
-         }
-      });        
+            @Override
+            public void keyPressed(KeyEvent ke) {
+                if (ke.getKeyChar() >= '0' && ke.getKeyChar() <= '9')
+                   civico_text.setEditable(true);
+                else 
+                    civico_text.setEditable(false);
+                }
+            });        
         
         toolbar.add(denominazione);
         toolbar.add(destinazione_text);
@@ -100,7 +130,7 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
         
         assi_checkbox = new JCheckBox("Spedizione assicurata");
 
-        invia = new JButton(invia_str);
+        invia = new JButton("Aggiungi Spedizione");
         
         assi_checkbox.addActionListener(this);
         invia.addActionListener(this);
@@ -114,7 +144,12 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
         add(assi_checkbox);
         add(invia);
     }
-
+    /**
+     * Questa funzione gestirà gli eventi che avvengono sul pannello nello 
+     * specifico la creazione di una nuova spedizione ed il checkbox per la 
+     * creazione di una spedizione assicurata.
+     * @param e ActionEvent
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String component = e.getActionCommand();
@@ -132,6 +167,11 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
 
         }
     }
+    /**
+     * Aggiunge una spedizione eseguendo i controlli necessari in caso di 
+     * successo dei controlli: esegue la funzione aggiungiSpedizione dell'oggetto
+     * core e aggiunge un effetto al bottone in caso di successo o fallimento.
+     */
     void aggiungiSpedizione(){
         double peso = Double.parseDouble(peso_number.getValue().toString());
         double val = (assi_checkbox.isSelected())?
@@ -148,10 +188,20 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
         }
     }
     
+    /**
+     * La funzione ritorna l'indirizzo della spedizione che l'utente sta creando.
+     * @return String Ritorna la stringa contenente l'intero indirizzo
+     * @see String
+     */
     String getIndirizzo(){
     return denominazione.getSelectedItem() +" "+ destinazione_text.getText() 
             +" "+ civico_text.getText();
     }
+    /**
+     * Esegue un controllo sull'indirizzo per evitare che gli elementi siano vuoti.
+     * @return boolean ritorna true se il controllo non riporta errori
+     * @see boolean
+     */
     private boolean checkIndirizzo() {
         String dest = destinazione_text.getText();
         String civ = civico_text.getText();
@@ -160,12 +210,24 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
             return true;
         return false;
     }
-    boolean checkSpedizione(double peso, double val){
+    /**
+     * Esegue un controllo sul peso e sul valore assicurato, ritorna unn booleano
+     * in caso di successo o meno.
+     * @param peso Peso della nuova spedizione
+     * @param val Valore assicurato della nuova spedizione
+     * @return boolean ritorna true se il controllo non riporta errori
+     * @see boolean
+     */
+    private boolean checkSpedizione(double peso, double val){
         if((val > 0 || !assi_checkbox.isSelected()) && peso >0)
             return true;
         return false;
     }
-    // Da terminare
+    /**
+     * Aggiungeu n effetto visivo che mostra all'utente il successo, o meno, della
+     * aggiunta della spedizione.
+     * @param success Stato di successo della aggiunta di spedizione
+     */
     private void effettoAggiungi(boolean success){
         Color defB = invia.getBackground();
         Color defF = invia.getForeground();

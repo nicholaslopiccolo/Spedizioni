@@ -1,0 +1,62 @@
+Legenda:
+ nome_file:riga:funzione
+
+1) AppFrame.java:49:windowClosing
+la funzione modificata ora chiamerà la funzione write dell'oggetto core e scriverà il contenuto del database sui file
+
+2) FormInserimentoPanel.java:109:keyPressed
+La funzione modificata esegue un controllo sui tasti premuti dall'utente, permette l'inserimento di soli numeri.
+
+3) FormInserimentoPanel.java:153:actionPerformed
+La funzione così modificata potrà ascoltare gli eventi nello specifico: Spedizione assicurata e Aggiungi Spedizione.
+
+4) ListaSpedizioniPanel.java:100:prepareRenderer
+La funzione così modificata esegue una modifica del colore (di testo e backgound) sulla sola cella contenente lo stato di spedizione in base a quest'ultimo.
+
+5) ListaSpedizioniPanel.java:158:getCellEditor
+La funzione così modificata definisce l'editor di ogni singola cella nella sola colonna di stato aggiungendo un combobox creato dalla funzione comboBoxCustom, gli editor delle altre celle vengono definiti null.
+
+6) ListaSpedizioniPanel.java:177:setValueAt
+La funzione così modificata permette di settare il valore alle sole celle della colonna di stato
+
+7) ListaSpedizioniPanel.java:187:isCellEditable
+La funzione così modificata permette l'editing del valore delle celle nella colonna di stato
+
+8) ListaSpedizioniPanel.java:205:mouseReleased
+La funzione così modificata alla pressione del tasto destro in una cella di una riga crea un JPopupMenu che permette di eliminare la spedizione, questa funzionalità può essere eseguita solo dall'admin e per una spedizione in stato finale.
+
+9) ListaSpedizioniPanel.java:319:run
+La funzione così modificata crea uno oggetto swing worker che esegue ogni 5 secondi, aggiornando il congenuto della tabella.
+
+10) ListaSpedizioniPanel.java:354:doInBackground
+La funzione così modificata cancella la lista delle row della tabella ed esegue un publish per ogni spedizione.
+
+11) ListaSpedizioniPanel.java:395:process
+La funzione così modificata esegue un loop foreach dei chunks di ogni singola row publicata dalla funzione doInBackground e la aggiunge al modello della tabella
+
+12) MainPanel.java:75:actionPerformed
+La funzione così modificata, agganciata al bottone logout, esegue la disconnessione dello user loggato chiamando 3 funzioni: ltp.stop() che termina il thread di refresh della lista delle spedizioni, core.logout() rimuove i dati dell'utente corrente dal core e frame.avviaApp() che esegue il riavvio grafico dell'applicazione.
+
+13) StartPanel.java:95:windowClosed
+La funzione così modificata sull'evento di chiusura del SignDialog avia la funzione runApp() dell'oggetto frame (FrameApp) e così facendo permette all'utente di utilizzare le funzionalità del'aplicazione.
+
+14) StartPanel.java:111:actionPerformed
+La funzione così modificata ascolta e eventi distinti, admin che abilita o disabilita il tasto register, login che crea un signdialog in modalità login e registrati che apre un signdialog in modalità registrazione.
+
+15) User.java:98:toString
+La funzione così modificata ritorna la stringa dell'utente formata dai dati all'interno del suo stato.
+
+16) ThreadStato.java:43:run
+La funzione così modificata esegue la funzione spin() ogni x secondi definiti dalla variabile interna "secondi".
+
+17) SpedizioneAssicurata.java:52:isStatoFinale
+La funzione così modificata ritorna true nel caso in cui la spedizione assicurata abbia stato rimborso erogato o ricevuta.
+
+18) SpedizioneAssicurata.java:63:setStatoConsegna
+La funzione così modificata setta il nuovo stato di consegna senza controlli
+
+19) SpedizioneAssicurata.java:74:toString
+La funzione così modificata ritorna la stringa della SpedizioneAssicurata formata dai dati all'interno del suo stato.
+
+20) Spedizione.java:143:toString
+La funzione così modificata ritorna la stringa della Spedizione formata dai dati all'interno del suo stato.

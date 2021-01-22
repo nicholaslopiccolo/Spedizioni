@@ -1,17 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package spedizioni.progetto_pog.Logica;
 
-import static java.lang.Integer.max;
 import java.util.ArrayList;
 
 
 /**
- *
- * @author giokk
+ * <strong>Core</strong> permette di creare l'oggetto principe dell'applicazione
+ * che verrà utilizzato per gestire la logica dietro l'applicazione.
+ * @author nicholaslopiccolo
  */
 public class Core {
     private ThreadStato worker;
@@ -22,7 +17,10 @@ public class Core {
     private int user_index = -1;
     
     /**
-     *
+     * Il costruttore crea il database ed esegue il load dei dati da file
+     * in'oltre istanzia il thread di cambio stato e lo avvia.
+     * @param perc Percentuale di fallimento
+     * @param s Secondi per spin del thread di cambio stato
      */
     public Core(int perc,int s){
         db = new Database();
@@ -31,8 +29,6 @@ public class Core {
         worker = new ThreadStato(this,perc,s);
         worker.start();
     }
-    //GETTERS
-
     /**
      *  Ritorna l'utente corrente
      *  @return User
@@ -41,25 +37,18 @@ public class Core {
     public User getCurrentUser() {return current_user;}
     /**
     *   Ritorna il valore del permesso admin
-    *   @return     admin oppure cliente standard  
+    *   @return boolean admin oppure cliente standard  
     *   @see boolean
     */
     public boolean isAdmin() {return admin;}
-    
-    //UTILS
-
     /**
      *  Scrive il database nei relativi file
-     * 
      */
     public void write(){
         if(user_index>-1)
             db.utenti.replace(user_index, current_user);
         db.write();
     }
-    
-    // Funzioni Utente
-    
     /**
     *   Imposta lo user loggato al momento
     *   @param user indica il nuovo user corrente
@@ -67,12 +56,15 @@ public class Core {
     private void setUser(User user){current_user = user;}
     /**
      *
-     *   Registrazione di un nuovo utente
-     *   @param username indica lo username del nuovo cliente
-     *   @param password indica la password del nuovo cliente
-     *   @param indirizzo indica l'indirizzo associato al nuovo cliente
-     *   @return     registrazione eseguita con successo o meno
-     *   @see boolean
+     * Registrazione di un nuovo utente, prima fa un controlo per accertarsi 
+     * che lo user non stia provando ad eseguire una registrazione come admin, in seguito
+     * controlla che non esista uno user con lo stesso username.
+     * In fine crea lo user qualora lo username sia libero.
+     * @param username indica lo username del nuovo cliente
+     * @param password indica la password del nuovo cliente
+     * @param indirizzo indica l'indirizzo associato al nuovo cliente
+     * @return     registrazione eseguita con successo o meno
+     * @see boolean
      */
     public boolean register(String username,String password, String indirizzo){
         username = username.toLowerCase();
@@ -96,10 +88,11 @@ public class Core {
     }
     /**
      *
-     *   Funzione di login per l'applicazione
+     *   Funzione di login per l'applicazione in caso di admin esegue un login
+     *   statico in caso di user normale cerca di reperire i dati nel database. 
      *   @param username indica lo username 
      *   @param password indica la password 
-     *   @return     login eseguito con successo o meno
+     *   @return boolean Login eseguito con successo o meno
      *   @see boolean
      */
     public boolean login(String username,String password){
@@ -122,8 +115,8 @@ public class Core {
         return false;
     }
     /**
-     *  Disconnette l'utente dall'applicazione, 
-     *  permette di rieseguirei l login
+     * Disconnette l'utente dall'applicazione e permette di rieseguire il login.
+     * Imposta lo user corrente a null, lo user_index a -1 e l'admin a false;
      */
     public void logout(){
         setUser(null);
@@ -133,7 +126,14 @@ public class Core {
         System.out.println("Logout eseguito");
     }
      
-    // Logiche applicativo
+    // Logiche applicative
+    /**
+     * Restituisce la lista delle spedizioni prese dal database:
+     * Se lo user corrente è l'amministratore di sistema restituisce l'intera 
+     * lista in caso contrario rimuove le spedizioni di cui lo user non è proprietario.
+     * @return ArrayList
+     * @see ArrayList
+     */
     public ArrayList getSpedizioni() {
         ArrayList lista = db.getSpedizioni();
         
@@ -154,7 +154,6 @@ public class Core {
                 codice = ((Spedizione)sped_o).getCodice();
                 j = codice.indexOf(username);
             }
-            System.out.println("Codice: "+codice+" J: "+j);
                 
             if(j<0 && codice.indexOf("-") != username.length()){
                 lista.remove(i);
@@ -163,22 +162,17 @@ public class Core {
         }
         return lista;
     }
-    public ArrayList<SpedizioneAssicurata> getSpedizioniAssicurateUtente() {
-        ArrayList<SpedizioneAssicurata> lista = new ArrayList<SpedizioneAssicurata>();
-        String username = current_user.getUsername();
-        
-        for(int i=0;i<db.sped_assi.size();i++){
-            SpedizioneAssicurata assi = db.sped_assi.get(i);
-            String codice = assi.getCodice();
-            int j = codice.indexOf(username);
-
-            if(j>-1 && codice.indexOf("-") == username.length())
-                lista.add(assi);
-        }
-        
-        return lista;
-    }
-    
+    /**
+     * Aggiunge una spedizione al database, se valore assicurato è minore o uguale di zero
+     * allora la nuova spedizione e di tipo Spedizione in caso contrario è di tipo
+     * SpedizioneAssicurata.
+     * Incremento il contatore di spedizioni dello user e creo il codice concatenando
+     * lo username e il numero di spedizioni, in seguito la nuova spedizione verrà aggiunta 
+     * all'apposita lista del database.
+     * @param dest Destinazione della spedizione
+     * @param peso Peso della spedizione
+     * @param valAssi valore assicurato
+     */
     public void aggiungiSpedizione(String dest,double peso,double valAssi){
         current_user.nuovaSpedizione();
         String codice = current_user.getUsername()+"-"+current_user.getNroSpedizioni();
@@ -188,7 +182,13 @@ public class Core {
         
         System.out.println("Spedizione Aggiunta: "+codice);
     }
-    
+    /**
+     * Definiscono la possibilità o meno di passare da un vecchio stato ad uno nuovo.
+     * @param vecchio Stato attuale della spedizione
+     * @param nuovo Nuovo stato della spedizione
+     * @return boolean
+     * @see boolean
+     */
     private boolean logicheAggiornamentoStato(Stato vecchio, Stato nuovo){
         switch(vecchio){
             case FALLITO -> {
@@ -216,6 +216,16 @@ public class Core {
         }
         return false;
     }
+    /**
+     * Aggiorna lo stato della spedizione.
+     * Prima cerca la spedizione nel database sfruttandone il codice, in seguito
+     * esegue un controllo tramite la funzione logicheAggiornamento in caso di controllo
+     * positivo modifica lo stato ed esegue un replace della spedizione nel database.
+     * @param codice Codice univoco della spedizione
+     * @param nuovo_stato Nuovo stato della spedizione
+     * @return boolean
+     * @see boolean
+     */
     public boolean aggiornaStatoSpedizione(String codice,Stato nuovo_stato){
         boolean ok = false;
         
@@ -240,7 +250,14 @@ public class Core {
             }
         return ok;
     }
-    
+    /**
+     * Controlla se la spedizione contraddistinta dal codice univoco sia in stato
+     * finale oppure no. Esegue una ricerca della spedizione nel database e 
+     * chiama la funzione inStato finale della spedizione.
+     * @param codice Codice univoco della spedizione
+     * @return boolean
+     * @see boolean
+     */
     public boolean isSpedizioneStatoFinale(String codice){
         
         Object spedizione = db.trovaSpedizione(codice);
@@ -253,7 +270,11 @@ public class Core {
         
         return false;
     }
-    
+    /**
+     * Elimina la spedizione dal database. Esegue una ricerca della spedizione sul database
+     * tramite il codice ed infine la elimina.
+     * @param codice Codice univoco della spedizione
+     */
     public void eliminaSpedizione(String codice){
         
         Object spedizione = db.trovaSpedizione(codice);
@@ -266,7 +287,20 @@ public class Core {
     }
     
     // Funzioni per il thread
+    /**
+     * Restituisce l'intera lista di spedizioni
+     * @return ArrayList
+     * @see ArrayList
+     */
     public ArrayList getSpedizioniThread() {return db.getSpedizioni();}
+    /**
+     * Definiscono la possibilità o meno di passare da un vecchio stato ad uno nuovo,
+     * nel caso spedifico del thread.
+     * @param vecchio Stato attuale della spedizione
+     * @param nuovo Nuovo stato della spedizione
+     * @return boolean
+     * @see boolean
+     */
     private boolean logicheAggiornamentoStatoThread(Stato vecchio, Stato nuovo){
         switch(vecchio){
             case PREPARAZIONE -> {
@@ -287,6 +321,16 @@ public class Core {
         }
         return false;
     }
+    /**
+     * Controlla se la spedizione contraddistinta dal codice univoco sia in stato
+     * finale oppure no. Esegue una ricerca della spedizione nel database e 
+     * chiama la funzione inStato finale della spedizione. Aggiorna lo stato con
+     * delle logiche specifiche per il thread.
+     * @param codice Codice univoco della spedizione
+     * @param nuovo_stato Nuovo stato della spedizione
+     * @return boolean
+     * @see boolean
+     */
     public boolean aggiornaStatoSpedizioneThread(String codice,Stato nuovo_stato){
          boolean ok = false;
         

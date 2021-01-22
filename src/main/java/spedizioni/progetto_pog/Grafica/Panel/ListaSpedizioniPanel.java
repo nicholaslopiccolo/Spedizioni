@@ -26,19 +26,36 @@ import spedizioni.progetto_pog.Logica.SpedizioneAssicurata;
 import spedizioni.progetto_pog.Logica.Stato;
 
 /**
- *
- * @author giokk
+ * <strong>ListaSpedizioniPanel</strong> é il pannello che mostra la lista delle
+ * spedizioni attualmente in corso o fallite. La classe stessa implementa Runnable
+ * che permette l'utilizzo del pannello come se fosse un thread questo per eseguire
+ * un refresh della lista delle spedizioni ogni 5 secondi.
+ * @author nicholaslopiccolo
  */
 public class ListaSpedizioniPanel extends JPanel implements Runnable{
+    /**
+     * Thread che verrà utilizzato per avviare lo swingWorker
+     */
     private Thread thread;
-    
+    /**
+     * Variabile che memorizza il core dell'applicazione.
+     */
     private Core core;
-
+    /**
+     * Tabella spedizioni appiccicata al pannello
+     */
     private JTable tabella_spedizioni;
+    /**
+     * Modello della tabella delle spedizioni
+     */
     private DefaultTableModel modello_tabella;
-    
+    /**
+     * Indice della colonna di stato
+     */
     private final int C_STATO = 0;
-
+    /**
+     * Array di stringhe contenente il nome delle colonne
+     */
     private final String[] colonne = new String[]{
                                         "Stato Consegna",
                                         "Codice",
@@ -49,9 +66,10 @@ public class ListaSpedizioniPanel extends JPanel implements Runnable{
                                     };;
 
     /**
-     *
-     * @param frame
-     * @param core
+     * Il cotruttore esegue un setup grafico del pannello con la funzione 
+     * initComponents() e avvia il thread con la funzione start
+     * @param frame Frame antenato su cui è posizionato il pannello
+     * @param core Gestisce la logica dell'applicazione
      */
     @SuppressWarnings("empty-statement")
     public ListaSpedizioniPanel(AppFrame frame, Core core) {
@@ -62,7 +80,15 @@ public class ListaSpedizioniPanel extends JPanel implements Runnable{
         
         start();
     }
-
+    /**
+     * Questa funzione esegue un setup degli elementi principali del pannello
+     * quali scrollpane, tabella e model di quest'ultima.
+     * Le colonne della tabella sono statiche e vengono settate tramite la variabile
+     * colonne contenuta dello stato dell'oggetto, il contenuto delle row viene 
+     * caricato ad ogni spin del thread tramite uno swingworker
+     * (gli override verranno spiegati nel dettaglio nel file polimorfismo.txt).
+     * 
+     */
     private void initComponents() {
         setLayout(new BorderLayout());
         
@@ -170,10 +196,6 @@ public class ListaSpedizioniPanel extends JPanel implements Runnable{
                     
                     return (!core.isAdmin() && stato == Stato.FALLITO && assi);
                 }
-//                if(column==0){
-//                    Stato stato = (Stato) this.getValueAt(row, C_STATO);
-//                    return(core.isAdmin() && (stato==Stato.RICEVUTO || stato==Stato.RIMBORSO_EROGATO));
-//                }
                 return false;
             }
         };
@@ -217,33 +239,14 @@ public class ListaSpedizioniPanel extends JPanel implements Runnable{
         
         add(scroll_panel);
     }
-    
-    // Thread stuff
-    
-    public void start() {
-        if (thread == null) {
-          thread = new Thread(this);
-          thread.start();
-        }
-    }
-
-    public void stop() {
-        thread = null;
-    }
-
-    public void run() {
-        while (thread != null) {
-            TableSwingWorker worker = new TableSwingWorker(modello_tabella);
-            try {
-                worker.execute();
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {}
-            
-        }
-        thread = null;
-    }
-
-    private JComboBox comboBoxCustom(Stato stato) {
+    /**
+     * Questa funzione è necessaria per la creazione di un menù a tendina che permetta
+     * la modifica dello stato in particolari condizioni.
+     * @param stato Stato della spedizione presa in considerazione
+     * @return JComboBox Crea un combobox con i possibili stati successivi
+     * @see JComboBox
+     */
+     private JComboBox comboBoxCustom(Stato stato) {
         JComboBox combo_box = new JComboBox();
         switch (stato) {
             case FALLITO -> {
@@ -294,27 +297,62 @@ public class ListaSpedizioniPanel extends JPanel implements Runnable{
         }
         return combo_box;
     }
-
-    private void eliminaRighe() {
-        for (int i : tabella_spedizioni.getSelectedRows()) {
-            modello_tabella.removeRow(i);
+    /**
+     * Esegue lo start del thread del pannello
+     */
+    public void start() {
+        if (thread == null) {
+          thread = new Thread(this);
+          thread.start();
         }
     }
-
-    private void eliminaRigaSelezionata() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    /**
+     * Esegue lo stop del thread del pannello settando quest'ultimo a null
+     */
+    public void stop() {
+        thread = null;
     }
-    
+    /**
+     * Funzione che avvia il thread creando il worker ed eseguendo l'execute al 
+     * termine va in fase di sleep per 5 secondi
+     */
+    @Override
+    public void run() {
+        while (thread != null) {
+            TableSwingWorker worker = new TableSwingWorker(modello_tabella);
+            try {
+                worker.execute();
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {}
+            
+        }
+        thread = null;
+    }
+    /**
+     * <strong>TableSwingWorker</strong> questa classe crea uno swingworker, 
+     * che eseguirà un refresh della lista delle spedizioni andando 
+     * a svuotare per poi ricaricare il modello della tabella.
+     */
     public class TableSwingWorker extends SwingWorker<DefaultTableModel, Object[]> {
 
         private final DefaultTableModel tableModel;
 
+        /**
+         * Il costruttore aggancia il modello della tabella ad una variabile del
+         * proprio stato interno.
+         * @param tableModel Modella della tabella delle spedizioni
+         */
         public TableSwingWorker(DefaultTableModel tableModel) {
             this.tableModel = tableModel;
         }
+        /**
+         * La funzione così modificata cancella la lista delle row della tabella
+         * ed esegue un publish per ogni spedizione.
+         * @return DefaultTableModel Modello della tabella modificato
+         */
 
         @Override
-        protected DefaultTableModel doInBackground() throws Exception {
+        protected DefaultTableModel doInBackground(){
 
             // This is a deliberate pause to allow the UI time to render
             tableModel.setRowCount(0);
@@ -350,6 +388,10 @@ public class ListaSpedizioniPanel extends JPanel implements Runnable{
             return tableModel;
         }
 
+        /**
+         * La funzione così modificata esegue un loop foreach dei chunks di ogni singola row publicata dalla funzione doInBackground e la aggiunge al modello della tabella
+         * @param chunks Lista di row della tabella
+         */
         @Override
         protected void process(List<Object[]> chunks) {
             for(Object[] o: chunks)

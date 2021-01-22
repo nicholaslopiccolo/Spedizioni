@@ -19,8 +19,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author giokk
+ * <strong>Database</strong> la classe database permette di creare un oggetto 
+ * formato da 3 databse generici uno per file in cui verrano salvati i dati: spedizioni,
+ * Spedizioni assicurate e gli utenti.
+ * @author nicholaslopiccolo
  */
 class Database{
     protected DBGenerico <Spedizione> sped_std;
@@ -34,15 +36,22 @@ class Database{
     private final File sped_assi_file = 
             new File("database/spedizioniAssicurate.db");
     
+    /**
+     * Il costruttore istanzia i 3 database generici.
+     */
     public Database(){
         sped_std = new DBGenerico();
         sped_assi = new DBGenerico();
         utenti = new DBGenerico();
     }
-    /*
-    *   Questa funzione andrà a riempire le variabili spedizioni ed utenti con
-    *   il contenuto dei rispettivi file
-    */
+    /**
+     * Questa funzione andrà a riempire i 3 database generici di utenti, 
+     * spedizioni e spedizioni assicurate.
+     * Esegue un clear delle liste, un controllo che i file esistano (se no li crea)
+     * dopodichè crea 3 ObjectInputStream ed esegue un loop per caricare i 
+     * database ognuno dei quali termina con la EOFException al termine dei caricamenti 
+     * chiude i canali di stream.
+     */
     public void load(){
         System.out.println("Carico i dati da file");
 
@@ -118,10 +127,15 @@ class Database{
         }
 
     }
-    
+    /**
+     * Questa funzione andrà a scrivere i 3 database generici di utenti, 
+     * spedizioni e spedizioni assicurate negli appositi file.
+     * Per iniziare crea 3 ObjectOutputStream ed esegue 3 loop foreach per scrivere gli 
+     * oggetti dei database sui file in fine si esegue un fluch e si chiuse ogni
+     * canale di stream.
+     */
     public void write(){
         System.out.println("Scrivo i dati su file");
-
         try{
             
             ObjectOutputStream os_utenti = 
@@ -155,7 +169,13 @@ class Database{
             ioe.printStackTrace();
         }    
     }
-    
+    /**
+     * Restituisce la spedizione trovata tramite la stringa univoca "codice", 
+     * la ricerca viene eseguita nei due database generici contenente spedizioni
+     * e spedizioni assicurate.
+     * @param codice Codice univoco della singola spedizione
+     * @return Object Può essere una Spedizione o una SpedizioneAssicrata
+     */
     public Object trovaSpedizione(String codice){
         final int MAX = max(sped_std.size(),sped_assi.size());
         
@@ -171,7 +191,12 @@ class Database{
         }
         return null;
     }
-    
+    /**
+     * Restituisce una lista di tipo ArrayList contenente tutte le spedizioni e 
+     * le spedizioni assicurate.
+     * @return ArrayList
+     * @see ArrayList
+     */
     public ArrayList getSpedizioni(){
         ArrayList lista = new ArrayList();
         
@@ -183,6 +208,11 @@ class Database{
             
         return lista;
     }
+    /**
+     * Elimina la spedizione dal databse generico, prima la cerca con la funzione
+     * trovaSpedizione.
+     * @param codice 
+     */
     public void eliminaSpedizione(String codice){
         Object spedizione = trovaSpedizione(codice);
         
@@ -191,12 +221,6 @@ class Database{
                 sped_assi.remove((SpedizioneAssicurata)spedizione);
             else
                 sped_std.remove((Spedizione)spedizione);
-    }
-
-    private void print() {
-        utenti.print();
-        sped_std.print();
-        sped_assi.print();
     }
     
 }

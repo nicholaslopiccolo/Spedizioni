@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package spedizioni.progetto_pog.Logica;
 
 import java.util.ArrayList;
@@ -11,20 +6,28 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author giokk
+ * <strong>ThreadStato</strong> estende thread e classe permette di creare
+ * un thread che va a modificare lo stato di una spedizione ogni x secondi.
+ * @author nicholaslopiccolo
  */
 public class ThreadStato extends Thread{
     private Core core;
     private ArrayList<Stato> stati;
     
-    private int seconds;
+    private int secondi;
     private int prob_fallimento;
     private int numero_loop = 0;
     
-    public ThreadStato(Core core, int prob,int seconds){
+    /**
+     * Il costruttore setta i parametri iniziali e crea un'arraylist contenente
+     * i possibili stati successivi.
+     * @param core Gestisce la logica dell'applicazione
+     * @param prob Probabilità di fallimento
+     * @param secondi Secondi per ogni spin
+     */
+    public ThreadStato(Core core, int prob,int secondi){
         this.core = core;
-        this.seconds = seconds;
+        this.secondi = secondi;
         this.prob_fallimento = prob;
         
         stati = new ArrayList<Stato>();
@@ -33,32 +36,39 @@ public class ThreadStato extends Thread{
         stati.add(Stato.RICEVUTO);
         stati.add(Stato.RIMBORSO_EROGATO);
     }
-    
+    /**
+     * La funzione così modificata esegue la funzione spin() ogni x secondi 
+     * definiti dalla variabile interna "secondi".
+     */
     @Override
     public void run() {
-        
-        
         while(true){
-            spin1();
+            spin();
             
             try {
-                Thread.sleep(seconds * 1000);
+                Thread.sleep(secondi * 1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(ThreadStato.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-
-    private void spin1(){
+    /**
+     * spin rappresenta una rotazione del thread.
+     * In questo caso ogni rotazione cerca di cambiare stato ad una spedizione,
+     * con un massimo di 100 tentativi, per farlo crea un numero randomico 
+     * indice_successo che deve essere superiore alla probabilirà di fallimento
+     * altrimenti la spedizione fallisce.
+     * In seguito prende la lista delle spedizioni dall'oggetto core e genera un indice casuale
+     * a quel punto cerca di passare allo stato di spedizione successivo.
+     * 
+     */
+    private void spin(){
         int LIMITE = 100;
         int nro_loop = 0;
         int indice_successo;
         
         ArrayList spedizioni = core.getSpedizioniThread();
         
-        //ArrayList<Spedizione> lista_sped_std = core.getSpedizioni().getLista();
-        //ArrayList<SpedizioneAssicurata> lista_sped_assi = core.getSpedizioniAssicurate().getLista();
-
         if(spedizioni.isEmpty()){
             System.out.println("Nuovo Loop: " + (++numero_loop)+" Non ho niente da aggiornare");
             return;
@@ -98,53 +108,4 @@ public class ThreadStato extends Thread{
             }
         }
     }
-//    private void spin() {
-//        int LIMITE = 100;
-//        int nro_loop = 0;
-//        
-//        ArrayList<Spedizione> lista_sped_std = core.getSpedizioni().getLista();
-//        ArrayList<SpedizioneAssicurata> lista_sped_assi = core.getSpedizioniAssicurate().getLista();
-//
-//        if(lista_sped_std.isEmpty() && lista_sped_assi.isEmpty()){
-//            System.out.println("Nuovo Loop: " + (++numero_loop)+" Non ho niente da aggiornare");
-//            return;
-//        }
-//        
-//        int indice_successo = 1 + new Random().nextInt(100);
-//        System.out.println("Nuovo Loop: " + (++numero_loop)+" Indice Succeso: "+indice_successo);
-//        
-//        boolean cambio_avvenuto = false;
-//        while(!cambio_avvenuto){
-//            // Tutte le spedizioni in stato finale
-//            if(nro_loop++ >= LIMITE) return;
-//            
-//            int std_lenght = lista_sped_std.size();
-//            int assi_lenght = lista_sped_assi.size();
-//
-//            int indice_spedizione = 1 + new Random().nextInt(std_lenght+assi_lenght);
-//            
-//            if(indice_spedizione<=std_lenght){
-//                Spedizione std = lista_sped_std.get(indice_spedizione-1);
-//                int indice_stato = stati.indexOf(std.getStatoConsegna());
-//                if(!std.isStatoFinale() && indice_stato>=0 && indice_stato<stati.size()){
-//                    if(indice_successo > prob_fallimento)
-//                        cambio_avvenuto = core.aggiornaStatoSpedizioneThread(std.getCodice(), stati.get(indice_stato+1));
-//                    else 
-//                        cambio_avvenuto = core.aggiornaStatoSpedizioneThread(std.getCodice(), Stato.FALLITO);
-//                }
-//            }else{
-//                SpedizioneAssicurata assi = lista_sped_assi.get(indice_spedizione-1-std_lenght);
-//                Stato stato = assi.getStatoConsegna();
-//                int indice_stato = stati.indexOf(stato);
-//                if(!assi.isStatoFinale() && indice_stato>=0 && indice_stato<stati.size()-1){
-//                    if(indice_successo > prob_fallimento)
-//                        cambio_avvenuto = core.aggiornaStatoSpedizioneThread(assi.getCodice(), stati.get(indice_stato+1));
-//                    else 
-//                        cambio_avvenuto = core.aggiornaStatoSpedizioneThread(assi.getCodice(), Stato.FALLITO);
-//                }else if(stato == Stato.RIMBORSO_RICHIESTO)// Questo caso non fallisce mai
-//                    cambio_avvenuto = core.aggiornaStatoSpedizioneThread(assi.getCodice(), Stato.RIMBORSO_EROGATO);
-//                    
-//            }
-//        }
-//    }
 }

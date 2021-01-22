@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package spedizioni.progetto_pog.Grafica.Panel;
 
 import java.awt.BorderLayout;
@@ -16,16 +11,32 @@ import spedizioni.progetto_pog.Grafica.AppFrame;
 import spedizioni.progetto_pog.Logica.Core;
 
 /**
- *
- * @author giokk
+ * <strong>MainPanel</strong> permette di creare il pannello principale per l'utilizzo
+ * dell'aplicazione.
+ * 
+ * @author nicholaslopiccolo
  */
 public class MainPanel extends JPanel{
-    private Core core;
+    /**
+     * Variabile che memorizza il frame a cui è agganciato il pannello.
+     */
     private AppFrame frame;
-    private ListaSpedizioniPanel ltp;
-    
+    /**
+     * Variabile che memorizza il core dell'applicazione.
+     */
+    private Core core;
+    /**
+     * Variabile che memorizza il pannello tabulare
+     */
     private JTabbedPane tabbedPanel;
-    //private SignDialog signDialog;
+   
+    /**
+     * 
+     * Il costruttore aggancia il frame e il core dell'applicazione allo stato del pannello
+     * dopo chiama la funzione init che esegue il setup grafico.
+     * @param frame Frame antenato del pannello
+     * @param core Gestisce la logica dell'applicazione
+     */
     
     public MainPanel(AppFrame frame,Core core){
         super();
@@ -35,16 +46,21 @@ public class MainPanel extends JPanel{
         
         init();
     }
-    
+    /**
+     * Crea un JTabbedPanel e vi aggancia i unovi pannelli nel caso dell'admin 
+     * il solo pannello @see ListaSpedizioniPanel , per il cliente @see ListaSpedizioniPanel e 
+     * @see FormInserimentoPanel.
+     * In seguito aggiunge il tabbed panel a se stesso ed un bottone per egeguire
+     * il logout.
+     */
     private void init(){
-        boolean admin = core.isAdmin();
         setLayout(new BorderLayout());
         
         tabbedPanel = new JTabbedPane();
         
-        ltp = new ListaSpedizioniPanel(frame,core);
-        FormInserimentoPanel fip = new FormInserimentoPanel(frame,core,ltp);        
-        if(admin){
+        ListaSpedizioniPanel ltp = new ListaSpedizioniPanel(frame,core);
+        FormInserimentoPanel fip = new FormInserimentoPanel(frame,core);        
+        if(core.isAdmin()){
             tabbedPanel.addTab("Spedizioni", null,ltp,"Gestisci le spedizioni");
         } else {
             tabbedPanel.addTab("+", null,fip,"Crea una nuova spedizione");
@@ -67,11 +83,5 @@ public class MainPanel extends JPanel{
         add(tabbedPanel,BorderLayout.CENTER);
         add(logout,BorderLayout.PAGE_END);
         
-    }
-
-    void refreshListaSpedizioni() {
-        remove(tabbedPanel);
-        init();
-        revalidate();
     }
 }

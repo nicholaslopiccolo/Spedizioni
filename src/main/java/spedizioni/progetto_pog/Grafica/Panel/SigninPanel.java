@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package spedizioni.progetto_pog.Grafica.Panel;
 
 import java.awt.Color;
@@ -17,11 +12,25 @@ import javax.swing.JTextField;
 import spedizioni.progetto_pog.Logica.Core;
 
 /**
- *
- * @author giokk
+ * <strong>SigninPanel</strong> è il pannello che sarà agganciato al SignDialog
+ * e permetterà allo user di eseguire il login.
+ * @author nicholaslopiccolo
  */
 public class SigninPanel extends JPanel{
+    /**
+     * Variabile memorizza il core dell'applicativo
+     */
     private Core core;
+    
+    /**
+     * Il costruttore esegue un setup grafico aggiungendo le labels e le textfields
+     * per l'inserimento dei dati di username e password, in oltre vi è un bottone
+     * e una label contenente testo in caso di errore.
+     * @param core Gestisce la logica dell'applicazione
+     * @param dialog Tiene in memoria il Jdialog a cui si aggancia il pannello
+     * @param username Username attuale
+     * @param admin Caso in cui l'utente esegue il login come admin
+     */
     public SigninPanel(Core core,JDialog dialog,String username,boolean admin){
         super();
         this.core = core;
