@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import static java.lang.Integer.max;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,9 +23,9 @@ import java.util.logging.Logger;
  * @author giokk
  */
 class Database{
-    public DBGenerico <Spedizione> sped_std;
-    public DBGenerico <SpedizioneAssicurata> sped_assi;
-    public DBGenerico <User> utenti;
+    protected DBGenerico <Spedizione> sped_std;
+    protected DBGenerico <SpedizioneAssicurata> sped_assi;
+    protected DBGenerico <User> utenti;
         
     private final File u_file = 
             new File("database/utenti.db");
@@ -117,8 +119,6 @@ class Database{
 
     }
     
-    
-    
     public void write(){
         System.out.println("Scrivo i dati su file");
 
@@ -155,8 +155,45 @@ class Database{
             ioe.printStackTrace();
         }    
     }
+    
+    public Object trovaSpedizione(String codice){
+        final int MAX = max(sped_std.size(),sped_assi.size());
+        
+        for(int i=0;i<MAX;i++){
+            Spedizione std = null;
+            SpedizioneAssicurata assi = null;
+            
+            if(i<sped_std.size()) std = sped_std.get(i);
+            if(i<sped_assi.size())assi = sped_assi.get(i);
+            
+            if(std!=null && codice.equals(std.getCodice())) return std;
+            if(assi!=null && codice.equals(assi.getCodice())) return assi;
+        }
+        return null;
+    }
+    
+    public ArrayList getSpedizioni(){
+        ArrayList lista = new ArrayList();
+        
+        for(Spedizione std: sped_std.getLista())
+            lista.add(std);
+        
+        for(SpedizioneAssicurata assi: sped_assi.getLista())
+            lista.add(assi);
+            
+        return lista;
+    }
+    public void eliminaSpedizione(String codice){
+        Object spedizione = trovaSpedizione(codice);
+        
+        if(spedizione != null)
+            if(spedizione instanceof SpedizioneAssicurata)
+                sped_assi.remove((SpedizioneAssicurata)spedizione);
+            else
+                sped_std.remove((Spedizione)spedizione);
+    }
 
-    void print() {
+    private void print() {
         utenti.print();
         sped_std.print();
         sped_assi.print();

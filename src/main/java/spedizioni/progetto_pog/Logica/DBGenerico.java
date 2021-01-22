@@ -43,13 +43,6 @@ public class DBGenerico<E extends Serializable>{
         lista.set(index,e);
     }
     
-    public String toString(){
-        String str = "";
-        for(int i=0;i<lista.size();i++)
-            str+=lista.get(i).toString();
-        return lista.toString();
-    }
-    
     public int find(E e){
         return lista.indexOf(e);
     }
@@ -66,5 +59,12 @@ public class DBGenerico<E extends Serializable>{
         if(lista.isEmpty())return;
         for(int i=0;i<lista.size();i++)
             System.out.println(lista.get(i).toString());
+    } 
+    
+    public String toString(){
+        String str = "";
+        for(int i=0;i<lista.size();i++)
+            str+=lista.get(i).toString();
+        return str;
     }
 }

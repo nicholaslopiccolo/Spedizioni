@@ -90,10 +90,10 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
         toolbar.add(civico_text);
         
         // Spinner peso e valore assicurato
-        SpinnerModel model_peso = new SpinnerNumberModel(1, 1, 100, 0.5);     
+        SpinnerModel model_peso = new SpinnerNumberModel(0, 0, 100, 0.5);     
         peso_number = new JSpinner(model_peso);
         
-        SpinnerModel model_val = new SpinnerNumberModel(1, 1, 10000, 5);     
+        SpinnerModel model_val = new SpinnerNumberModel(0, 0, 10000, 5);     
         val_number = new JSpinner(model_val);
         val_number.setEnabled(false);
 
@@ -133,14 +133,13 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
         }
     }
     void aggiungiSpedizione(){
-        Float peso = Float.parseFloat(peso_number.getValue().toString());
-        Float val = Float.parseFloat(val_number.getValue().toString());
+        double peso = Double.parseDouble(peso_number.getValue().toString());
+        double val = (assi_checkbox.isSelected())?
+                Double.parseDouble(val_number.getValue().toString()):
+                -1;
         
         if(checkIndirizzo() && checkSpedizione(peso,val)){
-            if(!assi_checkbox.isSelected())
-                core.aggiungiSpedizione(getIndirizzo(), peso);
-            else    
-                core.aggiungiSpedizioneAssicurata(getIndirizzo(),peso,val);
+            core.aggiungiSpedizione(getIndirizzo(), peso,val);
             effettoAggiungi(true);
             System.out.println("SUCCESSO");
         } else {
@@ -161,8 +160,8 @@ public class FormInserimentoPanel extends JPanel implements ActionListener{
             return true;
         return false;
     }
-    boolean checkSpedizione(Float peso, Float val){
-        if(val > 0 && peso >0)
+    boolean checkSpedizione(double peso, double val){
+        if((val > 0 || !assi_checkbox.isSelected()) && peso >0)
             return true;
         return false;
     }

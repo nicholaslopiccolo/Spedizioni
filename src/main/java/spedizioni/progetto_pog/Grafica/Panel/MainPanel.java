@@ -22,6 +22,7 @@ import spedizioni.progetto_pog.Logica.Core;
 public class MainPanel extends JPanel{
     private Core core;
     private AppFrame frame;
+    private ListaSpedizioniPanel ltp;
     
     private JTabbedPane tabbedPanel;
     //private SignDialog signDialog;
@@ -41,7 +42,7 @@ public class MainPanel extends JPanel{
         
         tabbedPanel = new JTabbedPane();
         
-        ListaSpedizioniPanel ltp = new ListaSpedizioniPanel(frame,core);
+        ltp = new ListaSpedizioniPanel(frame,core);
         FormInserimentoPanel fip = new FormInserimentoPanel(frame,core,ltp);        
         if(admin){
             tabbedPanel.addTab("Spedizioni", null,ltp,"Gestisci le spedizioni");
@@ -57,6 +58,7 @@ public class MainPanel extends JPanel{
         logout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                ltp.stop();
                 core.logout();
                 frame.avviaApp();
             }

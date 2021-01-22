@@ -51,14 +51,7 @@ public class SigninPanel extends JPanel{
             
             if(usr_text.isEmpty() || pwd_text.isEmpty())return;
             
-            
-            if(admin){
-                if(this.core.loginAdmin(usr_text, pwd_text)){
-                    dialog.dispose();
-                    return;
-                }
-            }
-            else if(this.core.login(usr_text,pwd_text)){
+            if(this.core.login(usr_text, pwd_text)){
                 dialog.dispose();
                 return;
             }

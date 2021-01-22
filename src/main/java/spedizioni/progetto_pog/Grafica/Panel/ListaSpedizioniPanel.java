@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -321,56 +320,40 @@ public class ListaSpedizioniPanel extends JPanel implements Runnable{
             tableModel.setRowCount(0);
             System.out.println("Start polulating");
             
-            ArrayList<Spedizione> lista_sped_std;
-            ArrayList<SpedizioneAssicurata> lista_sped_assi;
-
-            // Carica le spedizione in base a chi è lo user
-            if (core.isAdmin()) {
-                lista_sped_std = core.getSpedizioni().getLista();
-                lista_sped_assi = core.getSpedizioniAssicurate().getLista();
-            } else {
-                lista_sped_std = core.getSpedizioniUtente();
-                lista_sped_assi = core.getSpedizioniAssicurateUtente();
-            }
-
-            for (int i = 0; i < lista_sped_std.size(); i++) {
+            ArrayList spedizioni = core.getSpedizioni();
+            
+            for(Object sped: spedizioni){
                 Object row[] = new Object[6];
-                Spedizione std = lista_sped_std.get(i);
-
-                //row[0] = false;
-                row[0] = std.getStatoConsegna();
-                row[1] = std.getCodice();
-                row[2] = std.getData();
-                row[3] = std.getDestinazione();
-                row[4] = std.getPeso();
-                row[5] = "";
-
+                
+                if(sped instanceof SpedizioneAssicurata){
+                    SpedizioneAssicurata assi = (SpedizioneAssicurata)sped;
+                    row[0] = assi.getStatoConsegna();
+                    row[1] = assi.getCodice();
+                    row[2] = assi.getData();
+                    row[3] = assi.getDestinazione();
+                    row[4] = assi.getPeso();
+                    row[5] = assi.getValoreAssicurato();
+                }else{
+                    Spedizione std = (Spedizione)sped;
+                    row[0] = std.getStatoConsegna();
+                    row[1] = std.getCodice();
+                    row[2] = std.getData();
+                    row[3] = std.getDestinazione();
+                    row[4] = std.getPeso();
+                    row[5] = "";
+                }
+                
                 publish(row);
                 Thread.yield();
-            }
-            for (int i = 0; i < lista_sped_assi.size(); i++) {
-                Object row[] = new Object[6];
-                SpedizioneAssicurata assi = lista_sped_assi.get(i);
-
-                //row[0] = false;
-                row[0] = assi.getStatoConsegna();
-                row[1] = assi.getCodice();
-                row[2] = assi.getData();
-                row[3] = assi.getDestinazione();
-                row[4] = assi.getPeso();
-                row[5] = assi.getValoreAssicurato();
-
-                publish(row);
-                Thread.yield();
+                    
             }
             return tableModel;
         }
 
         @Override
         protected void process(List<Object[]> chunks) {
-            System.out.println("Refresh...");
-            for(int i=0;i<chunks.size();i++)
-                tableModel.addRow(chunks.get(i));
+            for(Object[] o: chunks)
+                tableModel.addRow(o);
             //ableModel.addRows(chunks);
         }
     }

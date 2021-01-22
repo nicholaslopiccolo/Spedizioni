@@ -5,6 +5,7 @@
  */
 package spedizioni.progetto_pog.Logica;
 
+import static java.lang.Integer.max;
 import java.util.ArrayList;
 
 
@@ -20,8 +21,6 @@ public class Core {
     private boolean admin = false;
     private int user_index = -1;
     
-    
-    
     /**
      *
      */
@@ -29,14 +28,8 @@ public class Core {
         db = new Database();
         db.load();
         
-        worker = new ThreadStato(this,perc,s);// 10%, 20 secondi
+        worker = new ThreadStato(this,perc,s);
         worker.start();
-    }
-    public DBGenerico<Spedizione> getSpedizioni(){
-        return db.sped_std;
-    }
-    public DBGenerico<SpedizioneAssicurata> getSpedizioniAssicurate(){
-        return db.sped_assi;
     }
     //GETTERS
 
@@ -103,14 +96,20 @@ public class Core {
     }
     /**
      *
-     *   Login di un utente
-     *   @param username indica lo username del cliente
-     *   @param password indica la password del cliente
+     *   Funzione di login per l'applicazione
+     *   @param username indica lo username 
+     *   @param password indica la password 
      *   @return     login eseguito con successo o meno
      *   @see boolean
      */
     public boolean login(String username,String password){
         username = username.toLowerCase();
+        
+        if("admin".equals(username) && "toor".equals(password)){
+            setUser(new User("admin","",""));
+            admin=true;
+            return true;
+        }
         
         for(int i=0;i<db.utenti.size();i++){
             User u = db.utenti.get(i);
@@ -120,24 +119,6 @@ public class Core {
                 return true;
             }
         }
-        return false;
-    }
-    /**
-     *
-     *   Login Admin
-     *   @param username indica lo username
-     *   @param password indica la password
-     *   @return     login eseguito con successo o meno
-     *   @see boolean
-     */
-    public boolean loginAdmin(String username,String password){
-        username = username.toLowerCase();
-        if("admin".equals(username) && "toor".equals(password)){
-            setUser(new User("admin","",""));
-            admin=true;
-            return true;
-        }
-        admin = false;
         return false;
     }
     /**
@@ -153,21 +134,33 @@ public class Core {
     }
      
     // Logiche applicativo
-    
-    public ArrayList<Spedizione> getSpedizioniUtente() {
-        ArrayList<Spedizione> lista = new ArrayList<Spedizione>();
-        String username = current_user.getUsername();
+    public ArrayList getSpedizioni() {
+        ArrayList lista = db.getSpedizioni();
         
-        for(int i=0;i<db.sped_std.size();i++){
-            Spedizione std = db.sped_std.get(i);
-            String codice = std.getCodice();
-            int j = codice.indexOf(username);
-
-            if(j>-1 && codice.indexOf("-") == username.length()){
-                lista.add(std);
+        if(isAdmin()) return lista;
+        
+        String username = current_user.getUsername();
+                
+        for(int i=0;i<lista.size();i++){
+            Object sped_o = lista.get(i);
+            int j= -1;
+            String codice;
+            
+            if(sped_o instanceof SpedizioneAssicurata){
+                codice = ((SpedizioneAssicurata)sped_o).getCodice();
+                j = codice.indexOf(username);
+            }
+            else{
+                codice = ((Spedizione)sped_o).getCodice();
+                j = codice.indexOf(username);
+            }
+            System.out.println("Codice: "+codice+" J: "+j);
+                
+            if(j<0 && codice.indexOf("-") != username.length()){
+                lista.remove(i);
+                i--;
             }
         }
-        
         return lista;
     }
     public ArrayList<SpedizioneAssicurata> getSpedizioniAssicurateUtente() {
@@ -186,23 +179,14 @@ public class Core {
         return lista;
     }
     
-    public void aggiungiSpedizione(String dest,double peso){
+    public void aggiungiSpedizione(String dest,double peso,double valAssi){
         current_user.nuovaSpedizione();
-        
         String codice = current_user.getUsername()+"-"+current_user.getNroSpedizioni();
-        Spedizione std = new Spedizione(codice,dest,peso);
+
+        if(valAssi<=0)db.sped_std.add(new Spedizione(codice,dest,peso));
+        else db.sped_assi.add(new SpedizioneAssicurata(codice,dest,peso,valAssi));
         
-        db.sped_std.add(std);
-        System.out.println("Spedizione Aggiunta: "+std.toString());
-    }
-    public void aggiungiSpedizioneAssicurata(String dest,double peso,double val_assicurato){
-        current_user.nuovaSpedizione();
-        
-        String codice = current_user.getUsername()+"-"+current_user.getNroSpedizioni();
-        SpedizioneAssicurata assi = new SpedizioneAssicurata(codice,dest,peso,val_assicurato);
-        
-        db.sped_assi.add(assi);
-        System.out.println("Spedizione Assicurata Aggiunta: "+assi.toString());
+        System.out.println("Spedizione Aggiunta: "+codice);
     }
     
     private boolean logicheAggiornamentoStato(Stato vecchio, Stato nuovo){
@@ -235,56 +219,54 @@ public class Core {
     public boolean aggiornaStatoSpedizione(String codice,Stato nuovo_stato){
         boolean ok = false;
         
-        for(int i=0;i<db.sped_std.size();i++){
-            Spedizione std = db.sped_std.get(i);
-            if(codice.equals(std.getCodice()) && logicheAggiornamentoStato(std.getStatoConsegna(),nuovo_stato)){
-                ok = std.setStatoConsegna(nuovo_stato);
-                db.sped_std.replace(i, std);
-                return ok;
+        Object spedizione = db.trovaSpedizione(codice);
+        
+        if(spedizione != null)
+            if(spedizione instanceof SpedizioneAssicurata){
+                SpedizioneAssicurata assi = (SpedizioneAssicurata)spedizione;
+                if (logicheAggiornamentoStato(assi.getStatoConsegna(),nuovo_stato)){
+                    int i = db.sped_assi.find(assi);
+                    ok = assi.setStatoConsegna(nuovo_stato);
+                    db.sped_assi.replace(i, assi);
+                }
             }
-        }
-
-        for(int i=0;i<db.sped_assi.size();i++){
-            SpedizioneAssicurata assi = db.sped_assi.get(i);
-            if(codice.equals(assi.getCodice()) && logicheAggiornamentoStato(assi.getStatoConsegna(),nuovo_stato)){
-                ok = assi.setStatoConsegna(nuovo_stato);
-                db.sped_assi.replace(i, assi);
-                return ok;
+            else{
+                Spedizione std = (Spedizione)spedizione;
+                if (logicheAggiornamentoStato(std.getStatoConsegna(),nuovo_stato)){
+                    int i = db.sped_std.find(std);
+                    ok = std.setStatoConsegna(nuovo_stato);
+                    db.sped_std.replace(i, std);
+                }
             }
-        }
         return ok;
     }
     
     public boolean isSpedizioneStatoFinale(String codice){
         
-        for(int i=0;i<db.sped_std.size();i++){
-            Spedizione std = db.sped_std.get(i);
-            if(std.getCodice().equals(codice))
-                return std.isStatoFinale();
-        }
-
-        for(int i=0;i<db.sped_assi.size();i++){
-            SpedizioneAssicurata assi = db.sped_assi.get(i);
-            if(assi.getCodice().equals(codice))
-                return assi.isStatoFinale();
-        }
+        Object spedizione = db.trovaSpedizione(codice);
+        
+        if(spedizione != null)
+            if(spedizione instanceof SpedizioneAssicurata)
+                return ((SpedizioneAssicurata)spedizione).isStatoFinale();
+            else
+                return ((Spedizione)spedizione).isStatoFinale();
+        
         return false;
     }
     
     public void eliminaSpedizione(String codice){
-        for(int i=0;i<db.sped_std.size();i++){
-            Spedizione std = db.sped_std.get(i);
-            if(std.getCodice().equals(codice)) 
-                db.sped_std.remove(std);
-        }
-        for(int i=0;i<db.sped_assi.size();i++){
-            SpedizioneAssicurata assi = db.sped_assi.get(i);
-            if(assi.getCodice().equals(codice))
-                db.sped_assi.remove(assi);
-        }
+        
+        Object spedizione = db.trovaSpedizione(codice);
+        
+        if(spedizione != null)
+            if(spedizione instanceof SpedizioneAssicurata)
+                db.sped_assi.remove((SpedizioneAssicurata)spedizione);
+            else
+                db.sped_std.remove((Spedizione)spedizione);
     }
     
     // Funzioni per il thread
+    public ArrayList getSpedizioniThread() {return db.getSpedizioni();}
     private boolean logicheAggiornamentoStatoThread(Stato vecchio, Stato nuovo){
         switch(vecchio){
             case PREPARAZIONE -> {
@@ -305,29 +287,29 @@ public class Core {
         }
         return false;
     }
-    
     public boolean aggiornaStatoSpedizioneThread(String codice,Stato nuovo_stato){
-        boolean ok = false;
+         boolean ok = false;
         
-        for(int i=0;i<db.sped_std.size();i++){
-            Spedizione std = db.sped_std.get(i);
-            if(codice.equals(std.getCodice()) && 
-                    logicheAggiornamentoStatoThread(std.getStatoConsegna(),nuovo_stato)){
-                ok = std.setStatoConsegna(nuovo_stato);
-                db.sped_std.replace(i, std);
-                return ok;
+        Object spedizione = db.trovaSpedizione(codice);
+        
+        if(spedizione != null)
+            if(spedizione instanceof SpedizioneAssicurata){
+                SpedizioneAssicurata assi = (SpedizioneAssicurata)spedizione;
+                if (logicheAggiornamentoStatoThread(assi.getStatoConsegna(),nuovo_stato)){
+                    int i = db.sped_assi.find(assi);
+                    ok = assi.setStatoConsegna(nuovo_stato);
+                    db.sped_assi.replace(i, assi);
+                }
             }
-        }
-
-        for(int i=0;i<db.sped_assi.size();i++){
-            SpedizioneAssicurata assi = db.sped_assi.get(i);
-            if(codice.equals(assi.getCodice()) && 
-                    logicheAggiornamentoStatoThread(assi.getStatoConsegna(),nuovo_stato)){
-                ok = assi.setStatoConsegna(nuovo_stato);
-                db.sped_assi.replace(i, assi);
-                return ok;
+            else{
+                Spedizione std = (Spedizione)spedizione;
+                if (logicheAggiornamentoStatoThread(std.getStatoConsegna(),nuovo_stato)){
+                    int i = db.sped_std.find(std);
+                    ok = std.setStatoConsegna(nuovo_stato);
+                    db.sped_std.replace(i, std);
+                }
             }
-        }
+        
         return ok;
     }
 }
