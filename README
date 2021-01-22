@@ -1,0 +1,3 @@
+cd src/main/java
+javac spedizioni\progetto_pog\Main.java
+java spedizioni\progetto_pog\Main.java
